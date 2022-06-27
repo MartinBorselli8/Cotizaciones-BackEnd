@@ -3,8 +3,4 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
-  <ItemGroup>
-    <Folder Include="entidades\" />
-    <Folder Include="servicios\" />
-  </ItemGroup>
 </Project>

@@ -1,7 +1,12 @@
+using contrato.servicios.Auth;
+using datos.Infraestructura;
+using dominio;
+using dominio.infraestructura;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using servicio;
 
 namespace Cotizaciones_BackEnd
 {
@@ -26,6 +32,9 @@ namespace Cotizaciones_BackEnd
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddScoped(typeof(IRepositorio<>), typeof(Repositorio<>));
+            services.AddDbContext<Contexto>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped(typeof(IAuthService), typeof(AuthService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
