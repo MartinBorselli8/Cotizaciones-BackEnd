@@ -28,7 +28,7 @@ namespace Cotizaciones_BackEnd.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromQuery] AuthLoginRequest request)
+        public async Task<IActionResult> Post([FromBody] AuthLoginRequest request)
         {
             var isSuccessfullOperation = await _AuthService.NewUserRegister(request);
             return Ok(isSuccessfullOperation);
