@@ -17,9 +17,9 @@ namespace servicio
     public class AuthService : IAuthService
     {
 
-        private readonly IRepositorio<dominio.entidades.User> _repositorioAuth;
+        private readonly IRepositorio<dominio.entidades.Users> _repositorioAuth;
 
-        public AuthService(IRepositorio<dominio.entidades.User> repositorioAuth)
+        public AuthService(IRepositorio<dominio.entidades.Users> repositorioAuth)
         {
             this._repositorioAuth = repositorioAuth;
         }
@@ -41,9 +41,9 @@ namespace servicio
             return response;
         }
 
-        private dominio.entidades.User UserMapping(AuthLoginRequest user)
+        private dominio.entidades.Users UserMapping(AuthLoginRequest user)
         {
-            var response = new dominio.entidades.User
+            var response = new dominio.entidades.Users
             {
                 UserName = user.UserName,
                 Password = user.Password
