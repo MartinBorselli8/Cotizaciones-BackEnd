@@ -7,5 +7,6 @@ namespace dominio
     {        
         public Contexto(DbContextOptions<Contexto> opciones) : base(opciones) { }
         public DbSet<Users> Users {get; set;}
+        public DbSet<Clients> Clients {get; set;}
     }
 }
