@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using servicio;
 using contrato.servicios.Client;
+using contrato.servicios.Product;
 
 namespace Cotizaciones_BackEnd
 {
@@ -37,6 +38,8 @@ namespace Cotizaciones_BackEnd
             services.AddDbContext<Contexto>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped(typeof(IAuthService), typeof(AuthService));
             services.AddScoped(typeof(IClientService), typeof(ClientService));
+            services.AddScoped(typeof(IProductService), typeof(ProductService));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
