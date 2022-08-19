@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using servicio;
 using contrato.servicios.Client;
 using contrato.servicios.Product;
+using contrato.servicios.Quote;
 
 namespace Cotizaciones_BackEnd
 {
@@ -40,6 +41,7 @@ namespace Cotizaciones_BackEnd
             services.AddScoped(typeof(IClientService), typeof(ClientService));
             services.AddScoped(typeof(IProductService), typeof(ProductService));
 
+            services.AddScoped(typeof(IQuotesService), typeof(QuotesService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
