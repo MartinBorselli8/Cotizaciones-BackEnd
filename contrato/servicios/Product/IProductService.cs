@@ -11,5 +11,8 @@ namespace contrato.servicios.Product
     public interface IProductService
     {
         Task<GetProductResponse> getProducts(GetProductRequest request);
+        Task<AddProductResponse> addProducts(AddProductRequest request);
+        Task<DeleteProductResponse> deleteProducts(DeleteProductRequest request);
+        Task<PutProductResponse> putProducts(PutProductRequest request);
     }
 }

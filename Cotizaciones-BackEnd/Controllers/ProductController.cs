@@ -29,5 +29,26 @@ namespace Cotizaciones_BackEnd.Controllers
             return Ok(response);
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromQuery] DeleteProductRequest request)
+        {
+            var response = await _ProductService.deleteProducts(request);
+            return Ok(response);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Put([FromQuery] PutProductRequest request)
+        {
+            var response = await _ProductService.putProducts(request);
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromQuery] AddProductRequest request)
+        {
+            var response = await _ProductService.addProducts(request);
+            return Ok(response);
+        }
+
     }
 }
