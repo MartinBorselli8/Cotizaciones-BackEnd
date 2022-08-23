@@ -6,6 +6,6 @@ namespace contrato.servicios.Quote.Response
 {
     public class GetQuotesResponse
     {
-        public List<contrato.entidades.Quote> Quotes { get; set; }
+        public List<contrato.entidades.QuoteForShow> Quotes { get; set; }
     }
 }

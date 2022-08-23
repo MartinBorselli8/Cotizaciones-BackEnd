@@ -1,4 +1,7 @@
 ﻿using contrato.entidades;
+using contrato.servicios.Client;
+using contrato.servicios.Product;
+using contrato.servicios.Product.Request;
 using contrato.servicios.Quote;
 using contrato.servicios.Quote.Request;
 using contrato.servicios.Quote.Response;
@@ -18,13 +21,16 @@ namespace servicio
     {
         private readonly IRepositorio<Quotes> _repositorioQuotes;
         private readonly IRepositorio<dominio.entidades.QuotesProducts> _repositorioQuotesProducts;
-        //private readonly IProductsService _ProductsService;
+        private readonly IRepositorio<Clients> _repositorioClient;
+        private readonly IProductService _ProductService;
+        //private readonly IClientService _ClientService;
 
-        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct/*, IProductsService productsService*/)
+        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients)
         {
             this._repositorioQuotes = repositorio;
             this._repositorioQuotesProducts = repositorioQuotesProduct;
-            //this._ProductsService = productsService;
+            this._ProductService = productService;
+            this._repositorioClient = repositorioClients;
         }
 
         public async Task<DeleteQuoteResponse> Delete(DeleteQuoteRequest request)
@@ -67,36 +73,57 @@ namespace servicio
         public async Task<GetQuotesResponse> Get(GetQuotesRequest request)
         {
             var response = new GetQuotesResponse();
+            response.Quotes = new List<QuoteForShow>();
             var repositoryResponse = await _repositorioQuotes.Buscar(CreatePredicate(request));
-            response.Quotes = repositoryResponse.Select(c => new Quote
+            var clients = await _repositorioClient.BuscarTodos();
+
+            foreach (var quote in repositoryResponse)
             {
-                Id = c.Id,
-                CreateDate = c.CreateDate,
-                ExpirationDate = c.ExpirationDate,
-                IdClient = c.IdClient,
-                Price = c.Price,
-                Condition = c.Condition
-            }).ToList();
-
+                var quoteForShow = new QuoteForShow();
+                quoteForShow.Id = quote.Id;
+                quoteForShow.CreateDate = quote.CreateDate;
+                quoteForShow.ExpirationDate = quote.ExpirationDate;
+                quoteForShow.Price = quote.Price;
+                quoteForShow.Condition = quote.Condition;
+                foreach (var client in clients)
+                {
+                    if (client.Id == quote.IdClient)
+                    {
+                        quoteForShow.Client = client.Name + " " + client.LastName;
+                        response.Quotes.Add(quoteForShow);
+                        break;
+                    }
+                }
+            }
             return response;
-
         }
 
         public async Task<GetQuotesResponse> GetAllQuotes()
         {
             var response = new GetQuotesResponse();
+            response.Quotes = new List<QuoteForShow>();
             var quotes = await _repositorioQuotes.BuscarTodos();
+            var clients = await _repositorioClient.BuscarTodos();
+            
 
-            response.Quotes = quotes.Select(c => new Quote
+            foreach (var quote in quotes)
             {
-                Id = c.Id,
-                CreateDate = c.CreateDate,
-                ExpirationDate = c.ExpirationDate,
-                IdClient = c.IdClient,
-                Price = c.Price,
-                Condition = c.Condition
-            }).ToList();
-
+                var quoteForShow = new QuoteForShow();
+                quoteForShow.Id = quote.Id;
+                quoteForShow.CreateDate = quote.CreateDate;
+                quoteForShow.ExpirationDate = quote.ExpirationDate;
+                quoteForShow.Price = quote.Price;
+                quoteForShow.Condition = quote.Condition;
+                foreach (var client in clients)
+                {
+                    if(client.Id == quote.IdClient)
+                    {
+                        quoteForShow.Client = client.Name + " " + client.LastName;
+                        response.Quotes.Add(quoteForShow);
+                        break;
+                    }
+                }
+            }
             return response;
         }
 
@@ -122,7 +149,7 @@ namespace servicio
             var QPList = new List<dominio.entidades.QuotesProducts>();
             var QuotesList = await _repositorioQuotes.BuscarTodos();
 
-            if (QuotesList.LastOrDefault().Condition == "inProcess")
+            if (QuotesList.LastOrDefault().Condition == "Cargando Productos")
             {
                 var Quote = await _repositorioQuotes.Obtener(QuotesList.LastOrDefault().Id);
                 if (Quote != null)
@@ -130,13 +157,13 @@ namespace servicio
                     Quote.CreateDate = DateTime.Now;
                     Quote.ExpirationDate = Quote.CreateDate.AddDays(30);
                     Quote.IdClient = request.IdClient;
-                    Quote.Condition = "Active";
+                    Quote.Condition = "Pendiente";
 
                     var predicate = CrearPredicado.Verdadero<dominio.entidades.QuotesProducts>();
                     if (QuotesList.LastOrDefault().Id > 0) predicate = predicate.Y(c => c.IdQuote == QuotesList.LastOrDefault().Id);
                     QPList = await _repositorioQuotesProducts.Buscar(predicate);
 
-                    Quote.Price = TotalPrice(QPList);
+                    Quote.Price = await TotalPrice(QPList);
                     await _repositorioQuotes.Actualizar(Quote);
                     response.Status = true;
                 }
@@ -160,23 +187,25 @@ namespace servicio
                 await _repositorioQuotes.Crear(new Quotes
                 {
                     IdClient = 1,
-                    Condition = "inProcess"
+                    Condition = "Cargando Productos"
                 });
 
                 var newQuotes = await _repositorioQuotes.BuscarTodos();
                 lastQuoteId = newQuotes.LastOrDefault().Id;
 
 
-            }else if (Quotes.LastOrDefault().Condition != "inProcess")
+            }
+            else if (Quotes.LastOrDefault().Condition != "Cargando Productos")
             {
                 await _repositorioQuotes.Crear(new Quotes
                 {
                     IdClient = 1,
-                    Condition = "inProcess"
+                    Condition = "Cargando Productos"
                 });
                 var newQuotes = await _repositorioQuotes.BuscarTodos();
                 lastQuoteId = newQuotes.LastOrDefault().Id;
-            }else
+            }
+            else
             {
                 lastQuoteId = Quotes.LastOrDefault().Id;
             }
@@ -194,7 +223,7 @@ namespace servicio
         private Expression<Func<dominio.entidades.Quotes, bool>> CreatePredicate(GetQuotesRequest request)
         {
             var predicate = CrearPredicado.Verdadero<dominio.entidades.Quotes>();
-            
+
             if (request.IdClient > 0) predicate = predicate.Y(c => c.IdClient == request.IdClient);
             if (request.Id > 0) predicate = predicate.Y(c => c.Id == request.Id);
             if (request.DateTo != null && request.DateFrom != null)
@@ -216,41 +245,33 @@ namespace servicio
             return predicate;
         }
 
-        private /*async*/ decimal TotalPrice(List<dominio.entidades.QuotesProducts> QPList)
+        private async Task<decimal> TotalPrice(List<dominio.entidades.QuotesProducts> QPList)
         {
-            double Response = 0;
-            //var responseService = await _ProductsService.GetAllProducts();
+            decimal Response = 0;
+            var request = new GetProductRequest();
+            var responseService = await _ProductService.getProducts(request);
 
-            //var productList = responseService.Products.Select(p => new contrato.entidades.Product
-            //{
-            //    Id = p.Id,
-            //    UnitPrice = p.UnitPrice,
-            //    Description = p.Description
-            //}).ToList();
-
-            //foreach (var qp in QPList)
-            //{
-            //    foreach (var p in productList)
-            //    {
-            //        if (p.Id == qp.IdProduct)
-            //        {
-            //            Response = Response + (p.UnitPrice * qp.Amount);
-            //            break;
-            //        }
-            //    }
-            //}
+            var productList = responseService.Products.Select(p => new contrato.entidades.Product
+            {
+                Id = p.Id,
+                UnitPrice = p.UnitPrice,
+                Description = p.Description
+            }).ToList();
 
             foreach (var qp in QPList)
             {
-                
-                    
-                    
-                Response = Response + (15 * qp.Amount);
-                        
-                    
-                
+                foreach (var p in productList)
+                {
+                    if (p.Id == qp.IdProduct)
+                    {
+                        Response = Response + (p.UnitPrice * qp.Amount);
+                        break;
+                    }
+                }
             }
-            return Convert.ToDecimal(Response);
+
+
+            return Response;
         }
     }
 }
