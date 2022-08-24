@@ -273,5 +273,25 @@ namespace servicio
 
             return Response;
         }
+
+        public async Task<ConfirmQuoteResponse> ConfirmQuote(ConfirmQuoteRequest request)
+        {
+            var response = new ConfirmQuoteResponse();
+            var QuoteToConfirm = await _repositorioQuotes.Obtener(request.Id);
+
+            if(QuoteToConfirm?.Condition == "Pendiente")
+            {
+                QuoteToConfirm.Condition = "Confirmado";
+                await _repositorioQuotes.Actualizar(QuoteToConfirm);
+                response.Status = true;
+                return response;
+            }
+            else
+            {
+                response.Status = false;
+                return response;
+            }
+
+        }
     }
 }

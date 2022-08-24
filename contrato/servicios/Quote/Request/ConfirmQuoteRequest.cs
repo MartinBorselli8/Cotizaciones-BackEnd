@@ -4,9 +4,8 @@ using System.Text;
 
 namespace contrato.servicios.Quote.Request
 {
-    public class CreateQuotesProductsRequest
+    public class ConfirmQuoteRequest
     {
-        public int IdProduct { get; set; }
-        public int Amount { get; set; }
+        public int Id { get; set; }
     }
 }

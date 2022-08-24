@@ -17,6 +17,9 @@ namespace contrato.servicios.Quote
         Task<DeleteQuoteResponse> Delete(DeleteQuoteRequest request);
         Task<DeleteQuotesProductsResponse> DeleteQuotesProducts(DeleteQuotesProductsRequest request);
         Task<CreateQuotesResponse> Put(CreateQuotesRequest request);
+
+        Task<ConfirmQuoteResponse> ConfirmQuote(ConfirmQuoteRequest request);
+
         Task<CreateQuotesProductsResponse> PostQuotesProducts(CreateQuotesProductsRequest request);
     }
 }
