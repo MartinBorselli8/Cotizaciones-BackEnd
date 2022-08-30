@@ -12,6 +12,7 @@ namespace contrato.servicios.Quote
         Task<GetQuotesResponse> Get(GetQuotesRequest request);
         Task<GetQuotesResponse> GetAllQuotes();
         Task<GetQuotesProductsResponse> GetQuotesProducts(GetQuotesProductsRequest request);
+        Task<GetQuotesProductsForShowResponse> GetQuotesProductsForShow();
         Task<EditQuoteResponse> Edit(EditQuotesRequest request);
         Task<EditQuotesProductsResponse> EditQuotesProducts(EditQuotesProductsRequest request);
         Task<DeleteQuoteResponse> Delete(DeleteQuoteRequest request);

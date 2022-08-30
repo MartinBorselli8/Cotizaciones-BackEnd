@@ -22,13 +22,15 @@ namespace servicio
         private readonly IRepositorio<Quotes> _repositorioQuotes;
         private readonly IRepositorio<dominio.entidades.QuotesProducts> _repositorioQuotesProducts;
         private readonly IRepositorio<Clients> _repositorioClient;
+        private readonly IRepositorio<Products> _repositorioProducts;
         private readonly IProductService _ProductService;
         //private readonly IClientService _ClientService;
 
-        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients)
+        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients, IRepositorio<Products> repositorioProducts)
         {
             this._repositorioQuotes = repositorio;
             this._repositorioQuotesProducts = repositorioQuotesProduct;
+            this._repositorioProducts = repositorioProducts;
             this._ProductService = productService;
             this._repositorioClient = repositorioClients;
         }
@@ -65,9 +67,22 @@ namespace servicio
             throw new NotImplementedException();
         }
 
-        public Task<EditQuotesProductsResponse> EditQuotesProducts(EditQuotesProductsRequest request)
+        public async Task<EditQuotesProductsResponse> EditQuotesProducts(EditQuotesProductsRequest request)
         {
-            throw new NotImplementedException();
+            var response = new EditQuotesProductsResponse();
+            var QuoteProduct = await _repositorioQuotesProducts.Obtener(request.Id);
+            if (request.NewAmount > 0)
+            {
+                QuoteProduct.Amount=request.NewAmount;
+                await _repositorioQuotesProducts.Actualizar(QuoteProduct);
+                response.Status = true;
+                return response;
+            }
+            else
+            {
+                response.Status = false;
+                return response;
+            }
         }
 
         public async Task<GetQuotesResponse> Get(GetQuotesRequest request)
@@ -90,11 +105,13 @@ namespace servicio
                     if (client.Id == quote.IdClient)
                     {
                         quoteForShow.Client = client.Name + " " + client.LastName;
-                        response.Quotes.Add(quoteForShow);
+                        
                         break;
                     }
                 }
+                response.Quotes.Add(quoteForShow);
             }
+            response.Quotes.Reverse();
             return response;
         }
 
@@ -124,6 +141,7 @@ namespace servicio
                     }
                 }
             }
+            response.Quotes.Reverse();
             return response;
         }
 
@@ -143,6 +161,36 @@ namespace servicio
             return response;
         }
 
+        public async Task<GetQuotesProductsForShowResponse> GetQuotesProductsForShow()
+        {
+            var response = new GetQuotesProductsForShowResponse();
+            response.quotesProducts = new List<QuotesProductsForShow>();
+            var Quotes =await _repositorioQuotes.Buscar(q=>q.Condition=="Cargando Productos");
+            var Products = await _repositorioProducts.BuscarTodos();
+
+            var predicate = CrearPredicado.Verdadero<dominio.entidades.QuotesProducts>();
+            predicate = predicate.Y(c => c.IdQuote == Quotes.FirstOrDefault().Id);
+            var repositoryResponse = await _repositorioQuotesProducts.Buscar(predicate);
+
+            foreach (var quotesProducts in repositoryResponse)
+            {
+                var QPFS = new QuotesProductsForShow();
+                QPFS.Id = quotesProducts.Id;
+                QPFS.Amount = quotesProducts.Amount;
+                foreach (var p in Products)
+                {
+                    if(p.Id == quotesProducts.IdProduct)
+                    {
+                        QPFS.UnitPrice = p.UnitPrice;
+                        QPFS.Description = p.Description;
+                        QPFS.Total = p.UnitPrice * quotesProducts.Amount;
+                        break;
+                    }
+                }
+                response.quotesProducts.Add(QPFS);
+            }
+            return response;
+        }
         public async Task<CreateQuotesResponse> Put(CreateQuotesRequest request)
         {
             var response = new CreateQuotesResponse();

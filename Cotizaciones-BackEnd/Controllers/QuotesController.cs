@@ -43,6 +43,14 @@ namespace Cotizaciones_BackEnd.Controllers
             return Ok(response);
         }
 
+        [HttpGet]
+        [Route("getQuotesProductsForCreateQuote")]
+        public async Task<IActionResult> GetQuotesProductsForCreateQuote()
+        {
+            var response = await _QuotesService.GetQuotesProductsForShow();
+            return Ok(response);
+        }
+
         [HttpPut]
 
         public async Task<IActionResult> Put([FromQuery] CreateQuotesRequest request)
@@ -77,12 +85,18 @@ namespace Cotizaciones_BackEnd.Controllers
 
         [HttpDelete]
         [Route("deleteQuotesProducts")]
-        public async Task<IActionResult> DeleteQuotesProducts([FromBody] DeleteQuotesProductsRequest request)
+        public async Task<IActionResult> DeleteQuotesProducts([FromQuery] DeleteQuotesProductsRequest request)
         {
             var response = await _QuotesService.DeleteQuotesProducts(request);
             return Ok(response);
         }
 
-
+        [HttpPut]
+        [Route("editQuoteProduct")]
+        public async Task<IActionResult> EditQuoteProduct([FromQuery] EditQuotesProductsRequest request)
+        {
+            var response = await _QuotesService.EditQuotesProducts(request);
+            return Ok(response);
+        }
     }
 }

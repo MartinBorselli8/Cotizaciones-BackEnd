@@ -6,5 +6,6 @@ namespace contrato.servicios.Quote.Response
 {
     public class EditQuotesProductsResponse
     {
+        public bool Status { get; set; }
     }
 }
