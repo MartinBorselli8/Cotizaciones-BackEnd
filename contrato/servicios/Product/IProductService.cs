@@ -14,5 +14,6 @@ namespace contrato.servicios.Product
         Task<AddProductResponse> addProducts(AddProductRequest request);
         Task<DeleteProductResponse> deleteProducts(DeleteProductRequest request);
         Task<PutProductResponse> putProducts(PutProductRequest request);
+        Task<GetProductForEditResponse> getProductsForEdit(GetProductForEditRequest request);
     }
 }

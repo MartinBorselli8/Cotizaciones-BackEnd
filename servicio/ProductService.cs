@@ -91,7 +91,7 @@ namespace servicio
             response.fueModificado = true;
             return response;
         }
-        public async Task<GetProductForEditResponse> getClientForEdit(GetProductForEditRequest request)
+        public async Task<GetProductForEditResponse> getProductsForEdit(GetProductForEditRequest request)
         {
             var response = new GetProductForEditResponse();
 
@@ -103,6 +103,8 @@ namespace servicio
             return response;
 
         }
+
+        
     }
     
 }

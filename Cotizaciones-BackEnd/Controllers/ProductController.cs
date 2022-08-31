@@ -1,4 +1,5 @@
-﻿using contrato.servicios.Product;
+﻿using contrato.servicios.Client.Request;
+using contrato.servicios.Product;
 using contrato.servicios.Product.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +48,14 @@ namespace Cotizaciones_BackEnd.Controllers
         public async Task<IActionResult> Post([FromQuery] AddProductRequest request)
         {
             var response = await _ProductService.addProducts(request);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("getProductById")]
+        public async Task<IActionResult> GetClientForEdit([FromQuery] GetProductForEditRequest request)
+        {
+            var response = await _ProductService.getProductsForEdit(request);
             return Ok(response);
         }
 
