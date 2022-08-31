@@ -24,6 +24,7 @@ namespace Cotizaciones_BackEnd
 {
     public class Startup
     {
+        private readonly string _MyCors = "MyCors"; 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -42,6 +43,14 @@ namespace Cotizaciones_BackEnd
             services.AddScoped(typeof(IProductService), typeof(ProductService));
 
             services.AddScoped(typeof(IQuotesService), typeof(QuotesService));
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: _MyCors, builder =>
+                {
+                    builder.AllowAnyOrigin();
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
