@@ -9,6 +9,7 @@ using dominio;
 using dominio.entidades;
 using dominio.infraestructura;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -61,10 +62,26 @@ namespace servicio
             return response;
         }
 
-        public Task<EditQuoteResponse> Edit(EditQuotesRequest request)
+        public async Task<EditQuoteResponse> EditQuotes(EditQuotesRequest request)
         {
+            var response = new EditQuoteResponse();
+            var quote = await _repositorioQuotes.Obtener(request.IdQuote);
+            var QL = await _repositorioQuotesProducts.Buscar(c => c.IdQuote == request.IdQuote);
+            if (quote != null)
+            {
+                if(request.IdQuote>0)quote.IdClient = request.IdClient;
+                quote.Price = await TotalPrice(QL);
+                await _repositorioQuotes.Actualizar(quote);
+                response.Status = true;
+                return response;
+            }
+            else
+            {
+                response.Status = false;
+                return response;
+            }
 
-            throw new NotImplementedException();
+
         }
 
         public async Task<EditQuotesProductsResponse> EditQuotesProducts(EditQuotesProductsRequest request)
@@ -161,15 +178,25 @@ namespace servicio
             return response;
         }
 
-        public async Task<GetQuotesProductsForShowResponse> GetQuotesProductsForShow()
+        public async Task<GetQuotesProductsForShowResponse> GetQuotesProductsForShow(GetQuotesProductsForShowRequest request)
         {
             var response = new GetQuotesProductsForShowResponse();
             response.quotesProducts = new List<QuotesProductsForShow>();
-            var Quotes =await _repositorioQuotes.Buscar(q=>q.Condition=="Cargando Productos");
+            var QuotesList = new List<dominio.entidades.Quotes>();
+
+            if (request.IsForEdit)
+            {
+                QuotesList = await _repositorioQuotes.Buscar(q => q.Id==request.IdQuote);
+            }
+            else
+            {
+                QuotesList = await _repositorioQuotes.Buscar(q => q.Condition == "Cargando Productos");
+            }
+            
             var Products = await _repositorioProducts.BuscarTodos();
 
             var predicate = CrearPredicado.Verdadero<dominio.entidades.QuotesProducts>();
-            predicate = predicate.Y(c => c.IdQuote == Quotes.FirstOrDefault().Id);
+            predicate = predicate.Y(c => c.IdQuote == QuotesList.FirstOrDefault().Id);
             var repositoryResponse = await _repositorioQuotesProducts.Buscar(predicate);
 
             foreach (var quotesProducts in repositoryResponse)
@@ -196,23 +223,34 @@ namespace servicio
             var response = new CreateQuotesResponse();
             var QPList = new List<dominio.entidades.QuotesProducts>();
             var QuotesList = await _repositorioQuotes.BuscarTodos();
-
-            if (QuotesList.LastOrDefault().Condition == "Cargando Productos")
+            var quote = new Quotes();
+            if (request.IsForEdit)
             {
-                var Quote = await _repositorioQuotes.Obtener(QuotesList.LastOrDefault().Id);
-                if (Quote != null)
+                quote = await _repositorioQuotes.Obtener(request.IdQuote);
+            }
+            else
+            {
+                quote = await _repositorioQuotes.Obtener(QuotesList.LastOrDefault().Id);
+            }
+
+
+
+            if (QuotesList.LastOrDefault().Condition == "Cargando Productos" || request.IsForEdit == true)
+            {
+                
+                if (quote != null)
                 {
-                    Quote.CreateDate = DateTime.Now;
-                    Quote.ExpirationDate = Quote.CreateDate.AddDays(30);
-                    Quote.IdClient = request.IdClient;
-                    Quote.Condition = "Pendiente";
+                    quote.CreateDate = DateTime.Now;
+                    quote.ExpirationDate = quote.CreateDate.AddDays(30);
+                    quote.IdClient = request.IdClient;
+                    quote.Condition = "Pendiente";
 
                     var predicate = CrearPredicado.Verdadero<dominio.entidades.QuotesProducts>();
                     if (QuotesList.LastOrDefault().Id > 0) predicate = predicate.Y(c => c.IdQuote == QuotesList.LastOrDefault().Id);
                     QPList = await _repositorioQuotesProducts.Buscar(predicate);
 
-                    Quote.Price = await TotalPrice(QPList);
-                    await _repositorioQuotes.Actualizar(Quote);
+                    quote.Price = await TotalPrice(QPList);
+                    await _repositorioQuotes.Actualizar(quote);
                     response.Status = true;
                 }
                 else
@@ -227,45 +265,60 @@ namespace servicio
         public async Task<CreateQuotesProductsResponse> PostQuotesProducts(CreateQuotesProductsRequest request)
         {
             var response = new CreateQuotesProductsResponse();
-            int lastQuoteId;
-            var Quotes = await _repositorioQuotes.BuscarTodos();
-            if (Quotes.Count == 0)
+            var newQuoteProducts = new dominio.entidades.QuotesProducts();
+            if (request.IsForEdit)
             {
-
-                await _repositorioQuotes.Crear(new Quotes
-                {
-                    IdClient = 1,
-                    Condition = "Cargando Productos"
-                });
-
-                var newQuotes = await _repositorioQuotes.BuscarTodos();
-                lastQuoteId = newQuotes.LastOrDefault().Id;
-
-
-            }
-            else if (Quotes.LastOrDefault().Condition != "Cargando Productos")
-            {
-                await _repositorioQuotes.Crear(new Quotes
-                {
-                    IdClient = 1,
-                    Condition = "Cargando Productos"
-                });
-                var newQuotes = await _repositorioQuotes.BuscarTodos();
-                lastQuoteId = newQuotes.LastOrDefault().Id;
+                newQuoteProducts.IdProduct = request.IdProduct;
+                newQuoteProducts.Amount = request.Amount;
+                newQuoteProducts.IdQuote = Convert.ToInt16(request.IdQuote);
+                await _repositorioQuotesProducts.Crear(newQuoteProducts);
+                response.Status = true;
+                return response;
             }
             else
             {
-                lastQuoteId = Quotes.LastOrDefault().Id;
+                int lastQuoteId;
+                var Quotes = await _repositorioQuotes.BuscarTodos();
+                if (Quotes.Count == 0)
+                {
+
+                    await _repositorioQuotes.Crear(new Quotes
+                    {
+                        IdClient = 1,
+                        Condition = "Cargando Productos"
+                    });
+
+                    var newQuotes = await _repositorioQuotes.BuscarTodos();
+                    lastQuoteId = newQuotes.LastOrDefault().Id;
+
+
+                }
+                else if (Quotes.LastOrDefault().Condition != "Cargando Productos")
+                {
+                    await _repositorioQuotes.Crear(new Quotes
+                    {
+                        IdClient = 1,
+                        Condition = "Cargando Productos"
+                    });
+                    var newQuotes = await _repositorioQuotes.BuscarTodos();
+                    lastQuoteId = newQuotes.LastOrDefault().Id;
+                }
+                else
+                {
+                    lastQuoteId = Quotes.LastOrDefault().Id;
+                }
+
+                
+                newQuoteProducts.IdProduct = request.IdProduct;
+                newQuoteProducts.Amount = request.Amount;
+                newQuoteProducts.IdQuote = lastQuoteId;
+                await _repositorioQuotesProducts.Crear(newQuoteProducts);
+
+                response.Status = true;
+                return response;
             }
 
-            var newQuoteProducts = new dominio.entidades.QuotesProducts();
-            newQuoteProducts.IdProduct = request.IdProduct;
-            newQuoteProducts.Amount = request.Amount;
-            newQuoteProducts.IdQuote = lastQuoteId;
-            await _repositorioQuotesProducts.Crear(newQuoteProducts);
-
-            response.Status = true;
-            return response;
+            
         }
 
         private Expression<Func<dominio.entidades.Quotes, bool>> CreatePredicate(GetQuotesRequest request)

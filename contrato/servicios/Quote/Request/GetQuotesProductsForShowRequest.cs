@@ -4,10 +4,9 @@ using System.Text;
 
 namespace contrato.servicios.Quote.Request
 {
-    public class CreateQuotesRequest
+    public class GetQuotesProductsForShowRequest
     {
-        public bool IsForEdit { get; set; }
-        public int IdClient { get; set; }
         public int IdQuote { get; set; }
+        public bool IsForEdit { get; set; }
     }
 }

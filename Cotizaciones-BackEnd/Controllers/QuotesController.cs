@@ -45,9 +45,9 @@ namespace Cotizaciones_BackEnd.Controllers
 
         [HttpGet]
         [Route("getQuotesProductsForCreateQuote")]
-        public async Task<IActionResult> GetQuotesProductsForCreateQuote()
+        public async Task<IActionResult> GetQuotesProductsForCreateQuote([FromQuery] GetQuotesProductsForShowRequest request)
         {
-            var response = await _QuotesService.GetQuotesProductsForShow();
+            var response = await _QuotesService.GetQuotesProductsForShow(request);
             return Ok(response);
         }
 
@@ -96,6 +96,15 @@ namespace Cotizaciones_BackEnd.Controllers
         public async Task<IActionResult> EditQuoteProduct([FromQuery] EditQuotesProductsRequest request)
         {
             var response = await _QuotesService.EditQuotesProducts(request);
+            return Ok(response);
+        }
+
+
+        [HttpPut]
+        [Route("editQuote")]
+        public async Task<IActionResult> EditQuote([FromQuery] EditQuotesRequest request)
+        {
+            var response = await _QuotesService.EditQuotes(request);
             return Ok(response);
         }
     }

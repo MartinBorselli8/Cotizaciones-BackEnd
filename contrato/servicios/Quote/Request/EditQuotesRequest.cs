@@ -6,5 +6,7 @@ namespace contrato.servicios.Quote.Request
 {
     public class EditQuotesRequest
     {
+        public int IdQuote { get; set; }
+        public int IdClient { get; set; }
     }
 }
