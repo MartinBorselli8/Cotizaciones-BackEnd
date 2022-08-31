@@ -91,6 +91,18 @@ namespace servicio
             response.fueModificado = true;
             return response;
         }
+        public async Task<GetProductForEditResponse> getClientForEdit(GetProductForEditRequest request)
+        {
+            var response = new GetProductForEditResponse();
+
+            var ProductToEdit = await _RepositorioProducts.Obtener(request.Id);
+
+            response.Description = ProductToEdit.Description;
+            response.UnitPrice = ProductToEdit.UnitPrice;
+
+            return response;
+
+        }
     }
     
 }
