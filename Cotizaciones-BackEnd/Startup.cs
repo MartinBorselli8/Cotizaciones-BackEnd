@@ -53,7 +53,9 @@ namespace Cotizaciones_BackEnd
         {
             app.UseCors(options =>
             {
-                options.AllowAnyOrigin();
+                options.WithOrigins("https://e-quotesservices.herokuapp.com");
+                options.AllowAnyMethod();
+                options.AllowAnyHeader();
             });
             if (env.IsDevelopment())
             {
