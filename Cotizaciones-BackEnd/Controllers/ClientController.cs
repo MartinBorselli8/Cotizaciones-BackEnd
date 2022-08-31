@@ -29,6 +29,13 @@ namespace Cotizaciones_BackEnd.Controllers
             return Ok(response);
         }
 
+        [HttpGet]
+        [Route("getClientById")]
+        public async Task<IActionResult> GetClientForEdit([FromQuery] GetClientForEditRequest request)
+        {
+            var response = await _ClientService.getClientForEdit(request);
+            return Ok(response);
+        }
 
         [HttpDelete]
         public async Task<IActionResult> Delete( [FromQuery] DeleteClientRequest request)

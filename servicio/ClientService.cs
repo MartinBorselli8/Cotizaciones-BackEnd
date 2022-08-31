@@ -28,6 +28,23 @@ namespace servicio
             _RepositorioClients = RepositorioClients;
         }
 
+        public async Task<GetClientForEditResponse> getClientForEdit(GetClientForEditRequest request)
+        {
+            var response = new GetClientForEditResponse();
+
+            var ClientToEdit = await _RepositorioClients.Obtener(request.Id);
+
+            response.Name = ClientToEdit.Name;
+            response.LastName = ClientToEdit.LastName;
+            response.Dni = ClientToEdit.Dni;
+            response.Phone = ClientToEdit.Phone;
+            response.Email = ClientToEdit.Email;
+
+            return response;
+
+        }
+
+
         public async Task<DeleteClientResponse> deleteClients(DeleteClientRequest request)
         {
             var response = new DeleteClientResponse();
