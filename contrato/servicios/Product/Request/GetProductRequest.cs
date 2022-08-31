@@ -6,8 +6,7 @@ namespace contrato.servicios.Product.Request
 {
     public class GetProductRequest
     {
-        public string Description { get; set; }
-        public decimal UnitPrice { get; set; }
-      
+        public int? Id { get; set; }
+
     }
 }

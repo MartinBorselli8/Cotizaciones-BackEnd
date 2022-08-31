@@ -83,9 +83,10 @@ namespace servicio
 
             var predicate = CrearPredicado.Verdadero<dominio.entidades.Clients>();
 
+            if (request.Dni > 0) predicate = predicate.Y(c => c.Dni == request.Dni);
             if (request.Name != null) predicate = predicate.Y(c => c.Name == request.Name);
             if (request.LastName != null) predicate = predicate.Y(c => c.LastName == request.LastName);
-            if (request.Dni > 0) predicate = predicate.Y(c => c.Dni == request.Dni);
+            
 
             var repositoryResponse = await _RepositorioClients.Buscar(predicate);
 

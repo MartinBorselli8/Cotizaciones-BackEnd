@@ -8,7 +8,7 @@ namespace contrato.servicios.Client.Request
     {
         public string Name { get; set; }
         public string LastName { get; set; }
-        public int Dni { get; set; }
+        public int? Dni { get; set; }
 
     }
 }

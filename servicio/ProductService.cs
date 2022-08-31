@@ -29,8 +29,8 @@ namespace servicio
 
             var predicate = CrearPredicado.Verdadero<dominio.entidades.Products>();
 
-            if (request.Description != null) predicate = predicate.Y(c => c.Description == request.Description);
-            if (request.UnitPrice > 0) predicate = predicate.Y(c => c.UnitPrice == request.UnitPrice);
+            
+            if (request.Id > 0) predicate = predicate.Y(c => c.Id == request.Id);
            
 
 
