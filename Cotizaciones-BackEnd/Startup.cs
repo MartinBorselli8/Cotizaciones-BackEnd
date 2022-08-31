@@ -35,6 +35,7 @@ namespace Cotizaciones_BackEnd
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
             services.AddScoped(typeof(IRepositorio<>), typeof(Repositorio<>));
             services.AddDbContext<Contexto>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -44,19 +45,21 @@ namespace Cotizaciones_BackEnd
 
             services.AddScoped(typeof(IQuotesService), typeof(QuotesService));
 
-            services.AddCors(options => options.AddDefaultPolicy(
-                builder => builder.AllowAnyOrigin()));
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseCors();
+            app.UseCors(options =>
+            {
+                options.AllowAnyOrigin();
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseHttpsRedirection();
 
             app.UseRouting();
