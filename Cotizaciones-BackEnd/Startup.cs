@@ -48,7 +48,7 @@ namespace Cotizaciones_BackEnd
             {
                 options.AddPolicy(name: _MyCors, builder =>
                 {
-                    builder.AllowAnyOrigin();
+                    builder.WithOrigins("https://e-quotesservices.herokuapp.com/");
                 });
             });
         }
