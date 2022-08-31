@@ -49,7 +49,7 @@ namespace Cotizaciones_BackEnd
         {
             app.UseCors(options =>
             {
-                options.WithOrigins("*", "https://e-quotesservices.herokuapp.com/");
+                options.WithOrigins("https://e-quotesservices.herokuapp.com/");
                 options.AllowAnyMethod();
                 options.AllowAnyHeader();
             });
