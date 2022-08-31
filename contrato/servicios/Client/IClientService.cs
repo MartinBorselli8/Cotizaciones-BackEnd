@@ -13,6 +13,7 @@ namespace contrato.servicios.Client
         Task <DeleteClientResponse> deleteClients(DeleteClientRequest request);
         Task<AddClientResponse> addClients(AddClientRequest request);
         Task<PutClientResponse> putClient(PutClientRequest request);
+        Task<GetClientForEditResponse> getClientForEdit(GetClientForEditRequest request);
 
     }
 }
