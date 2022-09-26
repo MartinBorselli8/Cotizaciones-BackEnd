@@ -8,5 +8,6 @@ namespace contrato.servicios.Product.Request
     {
         public string Description { get; set; }
         public decimal UnitPrice { get; set; }
+        public int Stock { get; set; }
     }
 }
