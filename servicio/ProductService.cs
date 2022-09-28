@@ -40,7 +40,8 @@ namespace servicio
             {
                 Id = c.Id,
                 Description = c.Description,
-                UnitPrice = c.UnitPrice
+                UnitPrice = c.UnitPrice,
+                Stock = Convert.ToInt32(c.Stock)
                 
 
             }).ToList();
@@ -55,7 +56,8 @@ namespace servicio
             var newProduct = new dominio.entidades.Products
             {
                 Description = request.Description,
-                UnitPrice = request.UnitPrice
+                UnitPrice = request.UnitPrice,
+                Stock = request.Stock
             };
 
             await _RepositorioProducts.Crear(newProduct);
@@ -85,6 +87,7 @@ namespace servicio
 
             if (request.Description != null) ProductToModify[0].Description = request.Description;
             if (request.UnitPrice > 0) ProductToModify[0].UnitPrice = request.UnitPrice;
+            if (request.Stock > 0) ProductToModify[0].Stock = request.Stock;
 
             await _RepositorioProducts.Actualizar(ProductToModify[0]);
 
@@ -99,6 +102,7 @@ namespace servicio
 
             response.Description = ProductToEdit.Description;
             response.UnitPrice = ProductToEdit.UnitPrice;
+            response.Stock = Convert.ToInt32(ProductToEdit.Stock);
 
             return response;
 
