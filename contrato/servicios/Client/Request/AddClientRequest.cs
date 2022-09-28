@@ -9,11 +9,9 @@ namespace contrato.servicios.Client.Request
     {
 
         [Required]
-        [MinLength(4, ErrorMessage ="El nombre necesita minimo 4 letras")]
         public string Name { get; set; }
 
         [Required]
-        [MinLength(4, ErrorMessage = "El apellido necesita minimo 4 letras")]
         public string LastName { get; set; }
 
         [Required]
