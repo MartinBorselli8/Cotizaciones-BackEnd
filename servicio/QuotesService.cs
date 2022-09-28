@@ -15,6 +15,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace servicio
 {
@@ -69,7 +70,7 @@ namespace servicio
             var QL = await _repositorioQuotesProducts.Buscar(c => c.IdQuote == request.IdQuote);
             if (quote != null)
             {
-                if(request.IdQuote>0)quote.IdClient = request.IdClient;
+                if (request.IdQuote > 0) quote.IdClient = request.IdClient;
                 quote.Price = await TotalPrice(QL);
                 await _repositorioQuotes.Actualizar(quote);
                 response.Status = true;
@@ -90,7 +91,7 @@ namespace servicio
             var QuoteProduct = await _repositorioQuotesProducts.Obtener(request.Id);
             if (request.NewAmount > 0)
             {
-                QuoteProduct.Amount=request.NewAmount;
+                QuoteProduct.Amount = request.NewAmount;
                 await _repositorioQuotesProducts.Actualizar(QuoteProduct);
                 response.Status = true;
                 return response;
@@ -122,7 +123,7 @@ namespace servicio
                     if (client.Id == quote.IdClient)
                     {
                         quoteForShow.Client = client.Name + " " + client.LastName;
-                        
+
                         break;
                     }
                 }
@@ -138,7 +139,7 @@ namespace servicio
             response.Quotes = new List<QuoteForShow>();
             var quotes = await _repositorioQuotes.BuscarTodos();
             var clients = await _repositorioClient.BuscarTodos();
-            
+
 
             foreach (var quote in quotes)
             {
@@ -150,7 +151,7 @@ namespace servicio
                 quoteForShow.Condition = quote.Condition;
                 foreach (var client in clients)
                 {
-                    if(client.Id == quote.IdClient)
+                    if (client.Id == quote.IdClient)
                     {
                         quoteForShow.Client = client.Name + " " + client.LastName;
                         response.Quotes.Add(quoteForShow);
@@ -186,13 +187,13 @@ namespace servicio
 
             if (request.IsForEdit)
             {
-                QuotesList = await _repositorioQuotes.Buscar(q => q.Id==request.IdQuote);
+                QuotesList = await _repositorioQuotes.Buscar(q => q.Id == request.IdQuote);
             }
             else
             {
                 QuotesList = await _repositorioQuotes.Buscar(q => q.Condition == "Cargando Productos");
             }
-            
+
             var Products = await _repositorioProducts.BuscarTodos();
 
             var predicate = CrearPredicado.Verdadero<dominio.entidades.QuotesProducts>();
@@ -206,7 +207,7 @@ namespace servicio
                 QPFS.Amount = quotesProducts.Amount;
                 foreach (var p in Products)
                 {
-                    if(p.Id == quotesProducts.IdProduct)
+                    if (p.Id == quotesProducts.IdProduct)
                     {
                         QPFS.UnitPrice = p.UnitPrice;
                         QPFS.Description = p.Description;
@@ -237,7 +238,7 @@ namespace servicio
 
             if (QuotesList.LastOrDefault().Condition == "Cargando Productos" || request.IsForEdit == true)
             {
-                
+
                 if (quote != null)
                 {
                     quote.CreateDate = DateTime.Now;
@@ -308,7 +309,7 @@ namespace servicio
                     lastQuoteId = Quotes.LastOrDefault().Id;
                 }
 
-                
+
                 newQuoteProducts.IdProduct = request.IdProduct;
                 newQuoteProducts.Amount = request.Amount;
                 newQuoteProducts.IdQuote = lastQuoteId;
@@ -318,7 +319,7 @@ namespace servicio
                 return response;
             }
 
-            
+
         }
 
         private Expression<Func<dominio.entidades.Quotes, bool>> CreatePredicate(GetQuotesRequest request)
@@ -380,7 +381,7 @@ namespace servicio
             var response = new ConfirmQuoteResponse();
             var QuoteToConfirm = await _repositorioQuotes.Obtener(request.Id);
 
-            if(QuoteToConfirm?.Condition == "Pendiente")
+            if (QuoteToConfirm?.Condition == "Pendiente")
             {
                 QuoteToConfirm.Condition = "Confirmado";
                 await _repositorioQuotes.Actualizar(QuoteToConfirm);
@@ -393,6 +394,24 @@ namespace servicio
                 return response;
             }
 
+        }
+
+        public async Task<bool> UpdateExpiredQuotes()
+        {
+            var QuoteList = await _repositorioQuotes.BuscarTodos();
+
+            foreach (var Quote in QuoteList)
+            {
+                if (Quote.Condition == "Pendiente")
+                {
+                    if (Quote.ExpirationDate < DateTime.Now)
+                    {
+                        Quote.Condition = "Vencido";
+                        await _repositorioQuotes.Actualizar(Quote);
+                    }
+                }
+            }
+            return true;
         }
     }
 }

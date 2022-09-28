@@ -22,5 +22,7 @@ namespace contrato.servicios.Quote
         Task<ConfirmQuoteResponse> ConfirmQuote(ConfirmQuoteRequest request);
 
         Task<CreateQuotesProductsResponse> PostQuotesProducts(CreateQuotesProductsRequest request);
+
+        Task<bool> UpdateExpiredQuotes();
     }
 }

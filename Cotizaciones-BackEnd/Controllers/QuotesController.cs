@@ -21,9 +21,14 @@ namespace Cotizaciones_BackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery]GetQuotesRequest request)
+        public async Task<IActionResult> Get([FromQuery] GetQuotesRequest request)
         {
-            var response = await _QuotesService.Get(request);
+            var response = new GetQuotesResponse();
+            var ItsUpdated = await _QuotesService.UpdateExpiredQuotes();
+            if (ItsUpdated)
+            {
+                response = await _QuotesService.Get(request);
+            }
             return Ok(response);
         }
 
