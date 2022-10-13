@@ -49,6 +49,24 @@ namespace Cotizaciones_BackEnd.Controllers
         }
 
         [HttpGet]
+        [Route("getQuotesProductsForStatitics")]
+        public List<int> getQuotesProductsForStatitics()
+        {
+            var response = new List<int>();
+
+            response.Add(5);
+            response.Add(4);
+            response.Add(7);
+            response.Add(1);
+            response.Add(3);
+            response.Add(2);
+            
+            return response;
+        }
+
+
+
+        [HttpGet]
         [Route("getQuotesProductsForCreateQuote")]
         public async Task<IActionResult> GetQuotesProductsForCreateQuote([FromQuery] GetQuotesProductsForShowRequest request)
         {
