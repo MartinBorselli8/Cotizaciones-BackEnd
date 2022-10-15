@@ -19,6 +19,7 @@ using servicio;
 using contrato.servicios.Client;
 using contrato.servicios.Product;
 using contrato.servicios.Quote;
+using contrato.servicios.Statitics;
 
 namespace Cotizaciones_BackEnd
 {
@@ -42,6 +43,7 @@ namespace Cotizaciones_BackEnd
             services.AddScoped(typeof(IAuthService), typeof(AuthService));
             services.AddScoped(typeof(IClientService), typeof(ClientService));
             services.AddScoped(typeof(IProductService), typeof(ProductService));
+            services.AddScoped(typeof(IStatiticsService), typeof(StatiticsService));
 
             services.AddScoped(typeof(IQuotesService), typeof(QuotesService));
         }
