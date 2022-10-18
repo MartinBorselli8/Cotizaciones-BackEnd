@@ -1,5 +1,6 @@
 ﻿using contrato.entidades;
 using contrato.servicios.Client;
+using contrato.servicios.EMail;
 using contrato.servicios.Product;
 using contrato.servicios.Product.Request;
 using contrato.servicios.Quote;
@@ -26,15 +27,17 @@ namespace servicio
         private readonly IRepositorio<Clients> _repositorioClient;
         private readonly IRepositorio<Products> _repositorioProducts;
         private readonly IProductService _ProductService;
+        private readonly IEMailService _EMailService;
         //private readonly IClientService _ClientService;
 
-        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients, IRepositorio<Products> repositorioProducts)
+        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients, IRepositorio<Products> repositorioProducts, IEMailService eMailService)
         {
             this._repositorioQuotes = repositorio;
             this._repositorioQuotesProducts = repositorioQuotesProduct;
             this._repositorioProducts = repositorioProducts;
             this._ProductService = productService;
             this._repositorioClient = repositorioClients;
+            this._EMailService = eMailService;
         }
 
         public async Task<DeleteQuoteResponse> Delete(DeleteQuoteRequest request)
@@ -380,11 +383,52 @@ namespace servicio
         {
             var response = new ConfirmQuoteResponse();
             var QuoteToConfirm = await _repositorioQuotes.Obtener(request.Id);
+            //Recuperar clientes.
+            //recuperar productos.
+            // recuperar quotesproducts de esta cotizacion.
+            //Buscar el cliente asociado a esta cotizacion.
+            //Buscar el E-mail de dicho cliente y cambiarlo donde esta "Correo de destino"
+            //Darle formato al body
+
 
             if (QuoteToConfirm?.Condition == "Pendiente")
             {
                 QuoteToConfirm.Condition = "Confirmado";
                 await _repositorioQuotes.Actualizar(QuoteToConfirm);
+
+               
+                string body = @"<style>
+                            h1{color:dodgerblue;}
+                            h2{color:darkorange;}
+                            </style>
+                            <h1>Este es el body del correo</h1></br>
+                            <h2>Este es el segundo párrafo</h2>";
+                /*
+                string bodyEjemplo = @"<style>
+                            h1{color:dodgerblue;}
+                            h2{color:darkorange;}
+                            </style>
+                            <h1>Informacion de la cotizacion</h1></br>
+                            <h2>Productos Seleccionados</h2></br>
+                            <ul>";
+
+                foreach (var item in listaQuoteProduct)
+                {
+                    foreach (var p in listaProducto)
+                    {
+                        if(item.ProductId == p.id)
+                        {
+                            bodyEjemplo = bodyEjemplo + "<li>" + "Product.descipcion: " +  "</li>";
+                        }
+                    }
+                }
+
+                bodyEjemplo = bodyEjemplo + "</ul></br>Total: ";
+
+                */
+
+                _EMailService.sendMail("Correo de destino", "Este correo fue enviado via C-sharp", body);
+
                 response.Status = true;
                 return response;
             }
