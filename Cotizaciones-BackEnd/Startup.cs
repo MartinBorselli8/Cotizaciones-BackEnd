@@ -19,6 +19,8 @@ using servicio;
 using contrato.servicios.Client;
 using contrato.servicios.Product;
 using contrato.servicios.Quote;
+using contrato.servicios.Email;
+
 using contrato.servicios.Statitics;
 
 namespace Cotizaciones_BackEnd
@@ -46,6 +48,7 @@ namespace Cotizaciones_BackEnd
             services.AddScoped(typeof(IStatiticsService), typeof(StatiticsService));
 
             services.AddScoped(typeof(IQuotesService), typeof(QuotesService));
+            services.AddScoped(typeof(IEmailService), typeof(EmailService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

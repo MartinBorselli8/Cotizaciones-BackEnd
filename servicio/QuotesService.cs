@@ -1,5 +1,6 @@
 ﻿using contrato.entidades;
 using contrato.servicios.Client;
+using contrato.servicios.Email;
 using contrato.servicios.Product;
 using contrato.servicios.Product.Request;
 using contrato.servicios.Quote;
@@ -26,15 +27,17 @@ namespace servicio
         private readonly IRepositorio<Clients> _repositorioClient;
         private readonly IRepositorio<Products> _repositorioProducts;
         private readonly IProductService _ProductService;
+        private readonly IEmailService _EMailService;
         //private readonly IClientService _ClientService;
 
-        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients, IRepositorio<Products> repositorioProducts)
+        public QuotesService(IRepositorio<Quotes> repositorio, IRepositorio<dominio.entidades.QuotesProducts> repositorioQuotesProduct, IProductService productService, IRepositorio<Clients> repositorioClients, IRepositorio<Products> repositorioProducts, IEmailService eMailService)
         {
             this._repositorioQuotes = repositorio;
             this._repositorioQuotesProducts = repositorioQuotesProduct;
             this._repositorioProducts = repositorioProducts;
             this._ProductService = productService;
             this._repositorioClient = repositorioClients;
+            this._EMailService = eMailService;
         }
 
         public async Task<DeleteQuoteResponse> Delete(DeleteQuoteRequest request)
@@ -381,9 +384,56 @@ namespace servicio
             var response = new ConfirmQuoteResponse();
             var QuoteToConfirm = await _repositorioQuotes.Obtener(request.Id);
 
+            var clients = await _repositorioClient.BuscarTodos();
+            var products = await _repositorioProducts.BuscarTodos();
+            var quoteproducts = await _repositorioQuotesProducts.BuscarTodos();
+
+            
+            var email = "";
+
+            foreach (var client in clients)
+            {
+                if (client.Id == QuoteToConfirm.IdClient)
+                {
+                    email = client.Email;
+                }
+            }
+            
             if (QuoteToConfirm?.Condition == "Pendiente")
             {
                 QuoteToConfirm.Condition = "Confirmado";
+
+
+                string body = @"<style>
+                            h1{color:dodgerblue;}
+                            h2{color:darkorange;}
+                            
+                            </style>
+                            <h3>Información de la cotización: </h3></br>
+                            <ul> ";
+
+                foreach (var quoteproduct in quoteproducts)
+                {
+                    if (quoteproduct.IdQuote == QuoteToConfirm.Id)
+                    {
+                        foreach (var product in products)
+                        {
+                            if (product.Id == quoteproduct.IdProduct)
+                            {
+                                body = body + "<li> " + product.Description + "<ul>"+
+                                    "<li> Precio unitario: "+ product.UnitPrice +"</li>"+
+                                    "<li> Cantidad seleccionada: " + quoteproduct.Amount + "</li>" +
+                                    " </ul> </li>";
+                            }
+
+                        }
+                    }
+                }
+
+                body = body + "</ul> <br> <h4> Total: $ " + QuoteToConfirm.Price + "<h4>";
+
+                _EMailService.sendMail(email, "Se confirmo la cotizacion en E-QUOTES", body);
+
                 await _repositorioQuotes.Actualizar(QuoteToConfirm);
                 response.Status = true;
                 return response;
